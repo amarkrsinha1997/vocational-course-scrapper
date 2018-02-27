@@ -92,7 +92,7 @@ def getCoursesDetail(course):
 def createJson(data):
 	jsonFile = open('course.json','w+')
 	for jsonData in data:
-		jsonFile.write(json.dump(jsonData))
+		json.dump(jsonData, jsonFile)
 	jsonFile.close()
 
 #start function for initalizing the process
