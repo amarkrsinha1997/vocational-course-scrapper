@@ -2,7 +2,7 @@
 #!python3
 # Script to get Information about the vocational courses available in India from the site https://www.youngbuzz.com/
 
-import requests, bs4 , csv, json
+import requests, bs4 , csv, json, time
 from selenium import webdriver
 
 #Functions that return the parsed web data in Soup form
@@ -23,11 +23,14 @@ def createCsv(dataSet):
 	csvDictWriter = csv.DictWriter(csvFile,fieldnames=fields)
 
 	for data in dataSet:
-		csvWriter.writerow(data['course-eligibilty'],data['course-name'],data['course-duration'])
+		csvWriter.writerow([data['course-name']])
+		csvWriter.writerow([data['course-eligibilty']])
+		csvWriter.writerow([data['course-duration']])
+		csvWriter.writerow([''])
 		csvDictWriter.writeheader()
 		for college in data['colleges-info']:
 			csvDictWriter.writerow(college)
-
+		csvWriter.writerow([''])
 	csvFile.close()
 
 #gets the college using it's link
@@ -92,33 +95,43 @@ def getCoursesDetail(course):
 def createJson(data):
 	jsonFile = open('course.json','w+')
 	for jsonData in data:
-		jsonFile.write(json.dump(jsonData))
+		jsonFile.write(json.dumps(jsonData))
 	jsonFile.close()
 
 #start function for initalizing the process
 def start():
 
-	city = input('Write the name of the city(Please mention the top city names)').lower()
+	city = input('Write the name of the city(Please mention the top city names) : ').lower()
 	url = 'https://www.youngbuzz.com/iti/courses/'+city
 	#getting the Page source when Engeering tab is active
 	courseDelhiPage = getUrl(url)
 	allEngineeringCourse = courseDelhiPage.find_all('', {'class':'plain'})
 
 	#getting the Page source when Non Engeering tab is active using seleinum
-	driver = webdriver.Chrome('./chromedriver')
+	try:
+		options = webdriver.ChromeOptions()
+		options.add_argument('headless')
+		driver = webdriver.Chrome('./chromedriver',chrome_options=options)
+	except:
+		try:
+			options = webdriver.ChromeOptions()
+			options.add_argument('headless')
+			driver = webdriver.Chrome(chrome_options=options)
+		except Exception as error:
+			raise error
 	driver.get(url)
 	driver.find_element_by_link_text('Non Engineering').click()
 	allNonEngineeringCourse = bs4.BeautifulSoup(driver.page_source,'html.parser').find_all('',{'class':'plain'})
-	driver.close()
+	time.sleep(3)
 
 	data = []
 
 	#scrape all the courses from the website 
 	print('Scarpping all Engineering courses.........')
-	for course in allEngineeringCourse:
+	for course in allEngineeringCourse[1:2]:
 		data.append(getCoursesDetail(course))
 	print('Scarpping all Non-Engineering courses.........')	
-	for course in allNonEngineeringCourse:
+	for course in allNonEngineeringCourse[2:3]:
 		data.append(getCoursesDetail(course))
 
 	print('Createing the Json file for the data.......')
@@ -126,5 +139,6 @@ def start():
 
 	print('Createing the CSV file for the data.......')
 	createCsv(data)
+	driver.close()
 
 start()
