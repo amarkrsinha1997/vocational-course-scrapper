@@ -19,13 +19,13 @@ def createCsv(dataSet):
 	csvWriter = csv.writer(csvFile)
 	
 	#Write the details about the colleges
-	fields = ['college-name','college-address', 'college-phone']
+	fields = ['CollegeName','CollegeAddress', 'CollegePhone']
 	csvDictWriter = csv.DictWriter(csvFile,fieldnames=fields)
 
 	for data in dataSet:
-		csvWriter.writerow([data['course-name']])
-		csvWriter.writerow([data['course-eligibilty']])
-		csvWriter.writerow([data['course-duration']])
+		csvWriter.writerow(['Course Name :',data['course-name']])
+		csvWriter.writerow(['Course Eligiblity',data['course-eligibilty']])
+		csvWriter.writerow(['Course Duration',data['course-duration']])
 		csvWriter.writerow([''])
 		csvDictWriter.writeheader()
 		for college in data['colleges-info']:
@@ -47,9 +47,9 @@ def getCollegeInfo(collegeLink):
 	collegePhone = [phone.text for phone in collegePage.find_all('', {'class':'phone'})]
 
 	#Saving it in dictionary format
-	collegeDetail['college-name'] = collegeName
-	collegeDetail['college-address'] = collegeAddress
-	collegeDetail['college-phone'] = collegePhone
+	collegeDetail['CollegeName'] = collegeName
+	collegeDetail['CollegeAddress'] = collegeAddress
+	collegeDetail['CollegePhone'] = collegePhone
 
 	return collegeDetail
 
